@@ -14,7 +14,6 @@ type DrvInfo interface {
 	GetPackageName() string
 	IsV6() bool
 	ID() uint64
-	Close() error
 }
 
 var Name = make(map[string]bool)

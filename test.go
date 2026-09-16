@@ -115,7 +115,7 @@ func Test() {
 	//Sunny.ProcessALLName(true, false)
 	//fmt.Println("驱动已加载")
 	//}
-	//fmt.Println(Sunny.SetIEProxy())
+	fmt.Println(Sunny.SetIEProxy())
 	Sunny.Port()
 	err := Sunny.Error
 	if err != nil {

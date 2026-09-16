@@ -4,44 +4,53 @@
 package tun
 
 import (
-	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
+	"strconv"
+
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/darwin_helper"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/Tun"
 )
 
-var dev = Tun.NewTun{}
-
+func call(args ...string) string {
+	var a []string
+	a = append(a, "utun")
+	a = append(a, args...)
+	as, _ := darwin_helper.Call(a...)
+	return as
+}
 func IsRun() bool {
-	return dev.IsRunning
+	return call("IsRun") == "true"
 }
 
 func Install() bool {
-	return true
+	return call("Install") == "true"
 }
 
 func SetHandle(Handle Tun.TcpFunc, udpSendReceiveFunc Tun.UdpFunc, sunny Tun.Interface) bool {
-	dev.ProxyPort = uint16(sunny.Port())
-	dev.Sunny = sunny
-	dev.CheckProcess = ProcessCheck.CheckPidByName
-	dev.SetHandle(Handle, udpSendReceiveFunc)
-	return true
+	darwin_helper.Handle = Handle
+	darwin_helper.UdpSendReceiveFunc = udpSendReceiveFunc
+	darwin_helper.Sunny = sunny
+	return call("SetHandle", strconv.Itoa(sunny.Port())) == "true"
+	/*
+		dev.ProxyPort = uint16(sunny.Port())
+		dev.Sunny = sunny
+		dev.CheckProcess = ProcessCheck.CheckPidByName
+		dev.SetHandle(Handle, udpSendReceiveFunc)
+		return true
+	*/
 }
 func Run() bool {
-	if dev.IsRunning {
-		return true
-	}
-	return dev.OnTunCreated(0)
+	return call("Run") == "true"
 }
 func Close() bool {
-	dev.IsRunning = false
-	return true
+	return call("Close") == "true"
 }
 func Name() string {
-	return "utun"
+	return call("Name")
 }
 
 func UnInstall() bool {
-	return true
+	return call("UnInstall") == "true"
 }
 func SetFd(fd int) bool {
-	return true
+	return call("SetFd", strconv.Itoa(fd)) == "true"
 }

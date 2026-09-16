@@ -18,16 +18,19 @@ var sessions = make(map[uint16]*DevConn)
 func (n *NewTun) pidFromCheck(pid int32, name string) (ok bool) {
 	sessionsMu.Lock()
 	defer sessionsMu.Unlock()
-	if n.CheckProcess == nil {
+	if n.CheckPidByName == nil {
 		return false
 	}
-	if _myPid == pid {
+	if _myPid1 == pid {
 		return true
 	}
-	if n.CheckProcess == nil {
+	if _myPid2 != 0 && _myPid2 == pid {
+		return true
+	}
+	if n.CheckPidByName == nil {
 		return false
 	}
-	return n.CheckProcess(pid, name)
+	return n.CheckPidByName(pid, name)
 }
 
 type NewTun struct {
@@ -37,7 +40,7 @@ type NewTun struct {
 	handleTCPCallback TcpFunc
 	handleUDPCallback UdpFunc
 	Sunny             Interface
-	CheckProcess      func(int32, string) bool
+	Check
 }
 
 func (n *NewTun) SetHandle(callbackTCP TcpFunc, udpSendReceiveFunc UdpFunc) {

@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/getPackageName"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/tunPublic"
 )
@@ -49,6 +48,7 @@ type DevConn struct {
 	pid                  uint32
 	inChSeg              map[uint32][]byte
 	ts                   time.Time
+	Check
 }
 
 func (d *DevConn) GetRemoteAddress() string {
@@ -79,7 +79,7 @@ func (d *DevConn) ID() uint64 {
 }
 
 // 构造函数；protocol 为 IP 协议号（TCP=6，UDP=17），仅 Android 用于查询来源包名。
-func NewDevConn(h io.ReadWriteCloser, clientIP net.IP, clientPort uint16, serverIP net.IP, serverPort uint16, ipv4 bool, protocol int, clientSynSeq uint32) *DevConn {
+func NewDevConn(h io.ReadWriteCloser, clientIP net.IP, clientPort uint16, serverIP net.IP, serverPort uint16, ipv4 bool, protocol int, clientSynSeq uint32, check Check) *DevConn {
 	// 创建 DevConn 基本信息
 	d := &DevConn{
 		clientIP:   clientIP,               // 客户端 IP
@@ -89,6 +89,7 @@ func NewDevConn(h io.ReadWriteCloser, clientIP net.IP, clientPort uint16, server
 		dataCh:     make(chan struct{}, 1), // 数据通知 channel（缓冲 1，避免阻塞）
 		v4:         ipv4,                   // 是否 IPv4
 		tun:        h,                      // TUN 句柄
+		Check:      check,
 	}
 	// 包名查询走 getPackageName 五元组缓存，减少 JNI 调用
 	pkgRes := getPackageName.GetRequestPackageName(
@@ -185,7 +186,7 @@ func (d *DevConn) Close() error {
 	sessionsMu.Lock()
 	delete(sessions, d.clientPort)
 	sessionsMu.Unlock()
-	ProcessCheck.DelDevObj(d.clientPort)
+	d.Check.DelDevObj(d.clientPort)
 	if !already {
 		_, _ = d.tun.Write(SendRstToClient(d))
 	}

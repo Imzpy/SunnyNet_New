@@ -4,6 +4,7 @@
 package tun
 
 import (
+	"github.com/qtgolang/SunnyNet/src/ProcessDrv/ProcessCheck"
 	"github.com/qtgolang/SunnyNet/src/ProcessDrv/tun/Tun"
 )
 
@@ -20,6 +21,7 @@ func Install() bool {
 func SetHandle(Handle Tun.TcpFunc, udpSendReceiveFunc Tun.UdpFunc, sunny Tun.Interface) bool {
 	dev.ProxyPort = uint16(sunny.Port())
 	dev.Sunny = sunny
+	dev.Check = &ch{}
 	dev.SetHandle(Handle, udpSendReceiveFunc)
 	return true
 }
@@ -39,4 +41,19 @@ func UnInstall() bool {
 }
 func SetFd(fd int) bool {
 	return true
+}
+
+type ch struct {
+}
+
+func (c ch) CheckPidByName(i int32, s string) bool {
+	return ProcessCheck.CheckPidByName(i, s)
+}
+
+func (c ch) AddDevObj(connPort uint16, info ProcessCheck.DrvInfo) {
+	ProcessCheck.AddDevObj(connPort, info)
+}
+
+func (c ch) DelDevObj(connPort uint16) {
+	ProcessCheck.DelDevObj(connPort)
 }

@@ -2618,7 +2618,7 @@ func (s *Sunny) handleClientConn(conn net.Conn) {
 		}
 		//然后进行数据处理,按照HTTPS数据进行处理
 		req.https()
-		_ = info.Close()
+		_ = conn.Close()
 		ProcessCheck.DelTcpConnectInfo(DrivePort)
 		return
 	}
